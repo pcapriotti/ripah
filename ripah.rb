@@ -27,13 +27,24 @@ class Ripah < KDE::XmlGuiWindow
     @format_mistake.foreground = Qt::Brush.new(Qt::red)
     
     @display.read_only = true
-    @info = Qt::Label.new('Speed: ', widget)
+    
+    new_label = lambda do
+      label = Qt::Label.new(status_bar)
+      status_bar.add_permanent_widget(label)
+      label
+    end
+    @info = {
+      :speed => new_label[],
+      :average => new_label[],
+      :words => new_label[],
+      :time => new_label[],
+      :mistakes => new_label[] }
     
     layout.add_widget(@display)
     layout.add_widget(@box)
-    layout.add_widget(@info)
     
     self.central_widget = widget
+    setupGUI
     
     @text = @loader.get_text(100, 1000).gsub(/\s*$/, '')
     self.text = @text
@@ -46,12 +57,11 @@ class Ripah < KDE::XmlGuiWindow
     
     @timer.connect(SIGNAL('timeout()')) do
       @meter.add_constant_measure(@time.elapsed)
-      @info.text = 
-          "Speed: #{format_speed(@meter.speed)} " +
-          "Average: #{format_speed(@meter.avg_speed)} " +
-          "Words: #{@meter.value / 5} " +
-          "Time: #{@time.elapsed / 1000}s " +
-          "Mistakes: #{@mistakes}"
+      @info[:speed].text = "Speed: #{format_speed(@meter.speed)}"
+      @info[:average].text = "Average: #{format_speed(@meter.avg_speed)}"
+      @info[:words].text = "Words: #{@meter.value / 5}"
+      @info[:time].text = "Time: #{@time.elapsed / 1000}s"
+      @info[:mistakes].text = "Mistakes: #{@mistakes}"
     end
     
     @box.connect(SIGNAL('textChanged()')) do
@@ -64,9 +74,11 @@ class Ripah < KDE::XmlGuiWindow
       if input == @text
         @timer.stop
         
-        font = @info.font
-        font.bold = true
-        @info.font = font
+        @info.values.each do |label|
+          font = label.font
+          font.bold = true
+          label.font = font
+        end
         
         @box.read_only = true
         
@@ -192,8 +204,6 @@ class WikipediaLoader
     if resp.is_a? Net::HTTPRedirection
       actual_uri = resp['location']
     end
-    
-    puts "actual_uri = #{actual_uri}"
     
     if actual_uri
       resp = Net::HTTP.get_response(URI.parse(actual_uri))
