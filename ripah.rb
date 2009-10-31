@@ -35,7 +35,7 @@ class Ripah < KDE::XmlGuiWindow
     
     self.central_widget = widget
     
-    @text = @loader.get_text(100, 1000)
+    @text = @loader.get_text(100, 1000).gsub(/\s*$/, '')
     self.text = @text
     
     @time = Qt::Time.new
