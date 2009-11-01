@@ -1,0 +1,14 @@
+<!DOCTYPE kpartgui SYSTEM 'kpartgui.dtd'>
+<gui version="2" name="ripah" >
+ <MenuBar>
+  <Menu name="file" >
+   <Action name="retry" />
+  </Menu>
+ </MenuBar>
+ <ToolBar name="mainToolBar" >
+  <Action name="retry" />
+ </ToolBar>
+ <ActionProperties scheme="Default" >
+  <Action shortcut="Ctrl+R" name="retry" />
+ </ActionProperties>
+</gui>

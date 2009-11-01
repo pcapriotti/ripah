@@ -5,6 +5,8 @@ require 'net/http'
 $KCODE = 'UTF8'
 
 class Ripah < KDE::XmlGuiWindow
+  include ActionHandler
+  
   def initialize(filename)
     super nil
     
@@ -44,6 +46,12 @@ class Ripah < KDE::XmlGuiWindow
     layout.add_widget(@box)
     
     self.central_widget = widget
+    regular_action(:retry, 
+                   :text => KDE::i18n('&Retry'),
+                   :icon => 'document-revert') do
+      @timer.stop
+      reset_info
+    end
     setupGUI
     
     @text = @loader.get_text(100, 1000).gsub(/\s*$/, '')
@@ -51,9 +59,7 @@ class Ripah < KDE::XmlGuiWindow
     
     @time = Qt::Time.new
     @timer = Qt::Timer.new
-    @meter = Meter.new(20)
-    @in_mistake = false
-    @mistakes = 0
+    reset_info
     
     @timer.connect(SIGNAL('timeout()')) do
       @meter.add_constant_measure(@time.elapsed)
@@ -140,6 +146,14 @@ class Ripah < KDE::XmlGuiWindow
     else
       "???"
     end
+  end
+  
+  def reset_info
+    @box.read_only = false
+    @box.text = ''
+    @meter = Meter.new(20)
+    @in_mistake = false
+    @mistakes = 0
   end
 end
 
